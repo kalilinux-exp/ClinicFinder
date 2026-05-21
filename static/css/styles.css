@@ -1,0 +1,760 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ClinicFinder — main stylesheet
+   ═══════════════════════════════════════════════════════════════════════════
+   QUICK REFERENCE
+
+   Brand color (blue header/buttons):  #1d4ed8  → search and replace all
+   Sidebar width:                       .sidebar { width: 310px }
+   Detail panel width:                  .detail-panel { width: 340px }
+   Topbar height:                       .topbar { padding: 0.65rem 1.25rem }
+   Filter bar pills/height:             .filter-select (below)
+   Wait badge colors:                   defined in map.js WAIT_COLORS (not here)
+   ER badge colors:                     defined in map.js renderEmergencyList()
+   Map pin colors:                      defined in map.js WAIT_COLORS / renderEmergencyMarkers()
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: #1d4ed8;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  z-index: 100;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-icon {
+  width: 22px;
+  height: 22px;
+  color: #93c5fd;
+}
+
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.tagline {
+  flex: 1;
+  font-size: 0.82rem;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-locate {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: 2px solid rgba(255,255,255,.6);
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-locate:hover { background: rgba(255,255,255,.15); border-color: white; }
+
+/* ── App layout ─────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar {
+  width: 310px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-state {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.clinic-list {
+  list-style: none;
+  flex: 1;
+}
+
+.clinic-item {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.clinic-item:hover { background: #f9fafb; }
+.clinic-item.selected {
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  padding-left: calc(1rem - 3px);
+}
+
+.clinic-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.clinic-item-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  color: #111827;
+}
+.clinic-item-atsitename {
+  font-size: 0.74rem;
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: -0.1rem;
+}
+
+.clinic-item-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+
+/* ── Map ────────────────────────────────────────────── */
+.map-container {
+  flex: 1;
+  position: relative;
+}
+#map { width: 100%; height: 100%; }
+
+/* ── Detail panel ───────────────────────────────────── */
+.detail-panel {
+  width: 340px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-left: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+.detail-panel.hidden { display: none; }
+
+.detail-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.45rem 0.6rem 0;
+  background: white;
+}
+.detail-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #9ca3af;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+.detail-close:hover { color: #374151; background: #f3f4f6; }
+
+.detail-header {
+  padding: 0.75rem 1.25rem 0.75rem;
+}
+.clinic-photo-wrap { overflow: hidden; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
+.clinic-photo-wrap.hidden { display: none; }
+.clinic-photo-img { width: 100%; height: 160px; object-fit: cover; display: block; }
+
+.detail-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+.detail-type {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detail-body {
+  padding: 0 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.4;
+}
+.detail-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #9ca3af;
+}
+
+/* ── Wait card ──────────────────────────────────────── */
+.wait-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.wait-card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+.wait-card-value {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.wait-time-label {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* ── Wait badges ────────────────────────────────────── */
+.wait-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+.wait-unknown { background: #9ca3af; }
+.wait-estimated {
+  opacity: 0.7;
+  outline: 2px dashed rgba(0,0,0,.25);
+  outline-offset: 2px;
+}
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn-primary {
+  width: 100%;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #1e40af; }
+
+.btn-secondary {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-secondary:hover { background: #f9fafb; }
+
+/* ── Wait form ──────────────────────────────────────── */
+.wait-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+.wait-form.hidden { display: none; }
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+.form-select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  color: #111827;
+}
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-msg {
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 0.4rem;
+  border-radius: 6px;
+}
+.form-msg.hidden { display: none; }
+.form-msg.success { background: #dcfce7; color: #166534; }
+.form-msg.error   { background: #fee2e2; color: #991b1b; }
+
+/* ── Responsive ─────────────────────────────────────── */
+/* ── Map legend ─────────────────────────────────────── */
+.map-legend {
+  position: absolute;
+  bottom: 24px;
+  right: 10px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.75rem;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  z-index: 10;
+  pointer-events: none;
+}
+.legend-title {
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+.legend-item:last-child { margin-bottom: 0; }
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar search bar (always visible) ────────────── */
+.sidebar-search {
+  padding: 0.6rem 0.85rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+.sidebar-search-form {
+  display: flex;
+  gap: 0.4rem;
+}
+.sidebar-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #111827;
+  background: white;
+}
+.sidebar-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+}
+.sidebar-search-btn {
+  padding: 0.45rem 0.8rem;
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sidebar-search-btn:hover { background: #1e40af; }
+#address-msg { margin-top: 0.35rem; margin-bottom: 0; }
+
+/* ── Country row ────────────────────────────────────── */
+.country-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+.country-select {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  color: #374151;
+  background: white;
+  cursor: pointer;
+}
+
+/* ── address-input used in insurance custom field ───── */
+.address-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #111827;
+  background: white;
+}
+.address-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+}
+
+/* ── Phone link ─────────────────────────────────────── */
+.phone-link {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+.phone-link:hover { text-decoration: underline; }
+
+/* ── Directions link ────────────────────────────────── */
+.directions-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 500;
+}
+.directions-link:hover { text-decoration: underline; }
+
+/* ── Sidebar controls (radius picker) ──────────────── */
+.sidebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+.control-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.radius-select {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  color: #374151;
+  background: white;
+  cursor: pointer;
+}
+
+/* ── Insurance card ─────────────────────────────────── */
+.insurance-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.insurance-card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+.insurance-standard { margin-bottom: 0.1rem; }
+.insurance-section-label {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  margin-bottom: 0.3rem;
+}
+.insurance-plans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.plan-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plan-badge.standard { background: #dbeafe; color: #1e40af; }
+.plan-badge.community { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+
+/* ── Rating card ────────────────────────────────────── */
+.rating-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.rating-card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+.rating-card-value {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.star-display {
+  font-size: 1.1rem;
+  color: #f59e0b;
+  letter-spacing: 1px;
+}
+
+/* ── Star input ─────────────────────────────────────── */
+.star-input {
+  display: flex;
+  gap: 0.1rem;
+}
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #d1d5db;
+  cursor: pointer;
+  padding: 0 0.05rem;
+  line-height: 1;
+  transition: color 0.08s;
+}
+.star-btn.active,
+.star-btn:hover { color: #f59e0b; }
+
+/* ── Sub-forms (insurance + review) ─────────────────── */
+.sub-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+.sub-form.hidden { display: none; }
+.review-textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #111827;
+  background: white;
+  resize: vertical;
+  font-family: inherit;
+}
+.review-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+}
+
+/* ── Insurance note (community reports expiry reminder) ─ */
+.insurance-note {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* ── Federal law note (under guaranteed plan badges) ──── */
+/* To change color: edit the color value below            */
+.insurance-federal-note {
+  font-size: 0.7rem;
+  color: #16a34a;        /* green — signals something positive/confirmed */
+  margin-top: 0.3rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+/* ── Sidebar clinic rating ──────────────────────────── */
+.clinic-rating { color: #f59e0b; font-weight: 600; }
+
+/* ── Form message variants ──────────────────────────── */
+.form-msg.info { background: #eff6ff; color: #1e40af; }
+
+/* ── Sidebar tabs ───────────────────────────────────── */
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  border: none;
+  background: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: #374151; }
+.tab-btn.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+
+/* ── ER warning banner ──────────────────────────────── */
+.er-warning {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  color: #9a3412;
+  line-height: 1.5;
+  margin: 0.25rem 0;
+}
+.er-warning.hidden { display: none; }
+
+/* ── ER type badge ──────────────────────────────────── */
+.er-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Filter bar ──────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+.filter-select {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  color: #374151;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.filter-select:focus { outline: none; border-color: #3b82f6; }
+.filter-select.active {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-weight: 600;
+}
+.filter-clear-btn {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #fca5a5;
+  border-radius: 5px;
+  background: #fff1f2;
+  color: #b91c1c;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.filter-clear-btn:hover { background: #fee2e2; }
+
+@media (max-width: 900px) {
+  .tagline { display: none; }
+}
+
+@media (max-width: 700px) {
+  .app-layout { flex-direction: column-reverse; }
+  .sidebar {
+    width: 100%;
+    height: 42vh;
+    border-right: none;
+    border-top: 2px solid #e5e7eb;
+    overflow-y: auto;
+  }
+  .map-container { flex: 1; min-height: 0; }
+  .detail-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 70vh;
+    border-left: none;
+    border-top: 2px solid #e5e7eb;
+    border-radius: 16px 16px 0 0;
+    z-index: 200;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.15);
+  }
+}
