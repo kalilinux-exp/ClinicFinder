@@ -87,7 +87,7 @@
             <option value="CHIP">CHIP</option>
             <option value="Self-pay">Self-pay</option>
           </optgroup>
-          <!-- Military plans — accepted at many clinics but NOT federally guaranteed -->
+          <!-- military plans — accepted at many clinics but NOT federally guaranteed (for some reason.) -->
           <optgroup label="Military / Veterans">
             <option value="Tricare">Tricare</option>
             <option value="CHAMPVA">CHAMPVA</option>
@@ -154,7 +154,7 @@
 
     <!-- detail panel — slides in when a result is clicked
          clinic-sections is hidden for ER entries (no wait/rating data for hospitals)
-         er-warning shows the billing notice for emergency rooms
+         the warning shows the billing notice for emergency rooms
          detail-website-row only shows when the entry has a website -->
     <section class="detail-panel hidden" id="detail-panel">
       <div class="detail-topbar">
@@ -216,7 +216,7 @@
           </div>
         </div>
 
-        <!-- Insurance -->
+        <!-- insurance -->
         <div class="insurance-card">
           <div class="insurance-card-label">Accepted Insurance</div>
           <!-- guaranteed at every FQHC by Section 330 of the Public Health Service Act -->
@@ -289,7 +289,7 @@
 
         <button id="btn-report-wait" class="btn-primary">Report Wait Time</button>
 
-        <!-- Rating -->
+        <!-- rating -->
         <div class="rating-card">
           <div class="rating-card-label">Community Rating</div>
           <div class="rating-card-value">
@@ -338,7 +338,6 @@
         </div><!-- /#clinic-sections -->
       </div>
     </section>
-
   </div>
 
   <script src="/static/js/map.js"></script>
