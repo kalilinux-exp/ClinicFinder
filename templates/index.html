@@ -342,9 +342,6 @@
   </div>
 
   <script src="/static/js/map.js"></script>
-  <!-- Maps JS API key has to be here — Google requires it client-side, no way around it.
-       The Street View key is hidden via the /api/streetview proxy in app.py though.
-       Protect this key by setting HTTP referrer restrictions in Google Cloud Console. -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&libraries=marker&callback=initMap&loading=async">
   </script>
