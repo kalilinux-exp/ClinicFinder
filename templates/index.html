@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicFinder — Free Clinics Near You</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+        <path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" fill="currentColor" stroke="none"/>
+      </svg>
+      <span class="brand-name">ClinicFinder</span>
+    </div>
+    <span class="tagline">Free &amp; sliding-scale clinics near you</span>
+    <button id="btn-locate" class="btn-locate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+      </svg>
+      Use My Location
+    </button>
+  </header>
+
+  <div class="app-layout">
+
+    <!-- sidebar — search, filters, and clinic list. width is in .sidebar in styles.css -->
+    <aside class="sidebar">
+      <div class="sidebar-search">
+        <form id="address-form" class="sidebar-search-form">
+          <input id="address-input" type="text" class="address-input sidebar-search-input"
+                 placeholder="Search city, address, or ZIP..." autocomplete="off">
+          <button type="submit" class="sidebar-search-btn">Search</button>
+        </form>
+        <!-- US only for now since HRSA data is US-based
+             to add more countries later: paste the country list back and re-enable detectUserCountry() in map.js -->
+        <div class="country-row">
+          <label class="control-label" for="country-select">Country:</label>
+          <select id="country-select" class="country-select">
+            <option value="us" selected>🇺🇸 United States</option>
+          </select>
+        </div>
+        <p id="address-msg" class="form-msg hidden"></p>
+      </div>
+      <!-- radius picker — add more <option value="N"> here if needed, JS handles the rest -->
+      <div class="sidebar-controls">
+        <label class="control-label" for="radius-select">Radius:</label>
+        <select id="radius-select" class="radius-select">
+          <option value="25">25 km (~15 mi)</option>
+          <option value="40">40 km (~25 mi)</option>
+          <option value="50">50 km (~31 mi)</option>
+          <option value="75">75 km (~47 mi)</option>
+        </select>
+      </div>
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="clinics">Free Clinics</button>
+        <button class="tab-btn" data-tab="er">Emergency Care</button>
+      </div>
+
+      <!-- filter bar — filter-clinics-only hides on ER tab, filter-er-only hides on clinics tab
+           to add a filter option: add an <option> to the right <select>
+           to add a whole new filter type: follow the steps at the top of the Filters
+           section in map.js -->
+      <div class="filter-bar" id="filter-bar">
+        <select id="filter-wait" class="filter-select">
+          <option value="">Wait: Any</option>
+          <option value="le15">≤ 15 min</option>
+          <option value="le30">≤ 30 min</option>
+          <option value="le60">≤ 1 hr</option>
+        </select>
+        <select id="filter-rating" class="filter-select filter-clinics-only">
+          <option value="0">Rating: Any</option>
+          <option value="3">3+ ★</option>
+          <option value="4">4+ ★</option>
+        </select>
+        <!-- the value= here must exactly match the value= in insurance-select below
+             so community reports line up. to add a plan, update both dropdowns -->
+        <select id="filter-insurance" class="filter-select filter-clinics-only">
+          <option value="">Insurance: Any</option>
+          <!-- These 4 are federally guaranteed at every FQHC -->
+          <optgroup label="Government (guaranteed at all FQHCs)">
+            <option value="Medicaid">Medicaid</option>
+            <option value="Medicare">Medicare</option>
+            <option value="CHIP">CHIP</option>
+            <option value="Self-pay">Self-pay</option>
+          </optgroup>
+          <!-- Military plans — accepted at many clinics but NOT federally guaranteed -->
+          <optgroup label="Military / Veterans">
+            <option value="Tricare">Tricare</option>
+            <option value="CHAMPVA">CHAMPVA</option>
+          </optgroup>
+          <optgroup label="National Plans">
+            <option value="Blue Cross Blue Shield">Blue Cross Blue Shield</option>
+            <option value="Anthem">Anthem</option>
+            <option value="Aetna">Aetna</option>
+            <option value="UnitedHealthcare">UnitedHealthcare</option>
+            <option value="Cigna">Cigna</option>
+            <option value="Humana">Humana</option>
+            <option value="Oscar Health">Oscar Health</option>
+            <option value="Kaiser Permanente">Kaiser Permanente</option>
+            <option value="Highmark">Highmark</option>
+          </optgroup>
+          <optgroup label="Medicaid Managed Care">
+            <option value="Molina Healthcare">Molina Healthcare</option>
+            <option value="WellCare">WellCare</option>
+            <option value="Ambetter">Ambetter</option>
+            <option value="Amerigroup">Amerigroup</option>
+            <option value="CareSource">CareSource</option>
+            <option value="Fidelis Care">Fidelis Care</option>
+            <option value="Health Net">Health Net</option>
+          </optgroup>
+          <optgroup label="Regional Plans">
+            <option value="EmblemHealth">EmblemHealth</option>
+            <option value="HealthFirst">HealthFirst</option>
+            <option value="MetroPlus">MetroPlus</option>
+            <option value="Independence Blue Cross">Independence Blue Cross</option>
+            <option value="Premera Blue Cross">Premera Blue Cross</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="Marketplace / ACA Plan">ACA / Marketplace Plan</option>
+          </optgroup>
+        </select>
+        <select id="filter-er-type" class="filter-select filter-er-only" style="display:none">
+          <option value="">Type: All</option>
+          <option value="Hospital">Hospital</option>
+          <option value="Urgent Care">Urgent Care</option>
+        </select>
+        <button id="filter-clear" class="filter-clear-btn" style="display:none">&#x2715; Clear</button>
+      </div>
+
+      <div id="sidebar-state" class="sidebar-state">
+        <p>Click <strong>Use My Location</strong> or search above to find free clinics near you.</p>
+      </div>
+      <ul id="clinic-list" class="clinic-list"></ul>
+      <ul id="er-list" class="clinic-list" style="display:none"></ul>
+    </aside>
+
+    <!-- map — Google Maps renders here -->
+    <main class="map-container">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="legend-title">Wait Time</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#22c55e"></span>&lt; 15 min</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#eab308"></span>15–30 min</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#f97316"></span>30–60 min</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#ef4444"></span>1–2 hrs</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#991b1b"></span>2+ hrs</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#9ca3af"></span>Unknown / Est.</div>
+      </div>
+    </main>
+
+    <!-- detail panel — slides in when a result is clicked
+         clinic-sections is hidden for ER entries (no wait/rating data for hospitals)
+         er-warning shows the billing notice for emergency rooms
+         detail-website-row only shows when the entry has a website -->
+    <section class="detail-panel hidden" id="detail-panel">
+      <div class="detail-topbar">
+        <button id="detail-close" class="detail-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="clinic-photo-wrap hidden" id="clinic-photo-wrap">
+        <img id="clinic-photo" class="clinic-photo-img" alt="Clinic exterior" loading="lazy">
+      </div>
+
+      <div class="detail-header">
+        <h2 id="detail-name" class="detail-name"></h2>
+        <p id="detail-type" class="detail-type"></p>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-row">
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span id="detail-address"></span>
+        </div>
+        <div class="detail-row" id="detail-phone-row">
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.1 3.41 2 2 0 0 1 3.09 1.23h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.36-.36a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16.92z"/>
+          </svg>
+          <span id="detail-phone"></span>
+        </div>
+        <div class="detail-row" id="detail-hours-row">
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span id="detail-hours"></span>
+        </div>
+
+        <div class="detail-row">
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+          <a id="detail-directions" href="#" target="_blank" rel="noopener noreferrer" class="directions-link">Get Directions</a>
+        </div>
+        <div class="detail-row" id="detail-website-row" style="display:none">
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <a id="detail-website" href="#" target="_blank" rel="noopener noreferrer" class="directions-link">Visit Website</a>
+        </div>
+
+        <div id="er-warning" class="er-warning hidden">
+          <strong>Billing applies</strong> — Emergency rooms and urgent care centers charge for services. Most hospitals have charity care programs for uninsured patients — ask about financial assistance at the billing desk.
+        </div>
+
+        <div id="clinic-sections">
+        <div class="wait-card">
+          <div class="wait-card-label">Current Wait Time</div>
+          <div class="wait-card-value">
+            <span id="detail-wait-badge" class="wait-badge wait-unknown">Unknown</span>
+            <small id="detail-wait-time" class="wait-time-label"></small>
+          </div>
+        </div>
+
+        <!-- Insurance -->
+        <div class="insurance-card">
+          <div class="insurance-card-label">Accepted Insurance</div>
+          <!-- guaranteed at every FQHC by Section 330 of the Public Health Service Act -->
+          <div class="insurance-standard insurance-plans">
+            <span class="plan-badge standard">Medicaid</span>
+            <span class="plan-badge standard">Medicare</span>
+            <span class="plan-badge standard">CHIP</span>
+            <span class="plan-badge standard">Self-pay / Sliding Scale</span>
+          </div>
+          <p class="insurance-federal-note">✓ Required by federal law at all federally qualified health centers</p>
+          <div id="insurance-community"></div>
+        </div>
+
+        <button id="btn-add-insurance" class="btn-secondary">+ I used my insurance here</button>
+
+        <form id="insurance-form" class="sub-form hidden">
+          <label class="form-label">Which plan was accepted?</label>
+          <!-- value= must match filter-insurance exactly — they're compared as plain strings
+               "other" triggers the free-text input below -->
+          <select id="insurance-select" class="form-select">
+            <option value="">-- Select a plan --</option>
+
+            <optgroup label="── Major National Plans ──">
+              <option value="Blue Cross Blue Shield">Blue Cross Blue Shield (BCBS)</option>
+              <option value="Anthem">Anthem / Anthem Blue Cross</option>
+              <option value="Aetna">Aetna</option>
+              <option value="UnitedHealthcare">UnitedHealthcare</option>
+              <option value="Cigna">Cigna</option>
+              <option value="Humana">Humana</option>
+              <option value="Oscar Health">Oscar Health</option>
+              <option value="Kaiser Permanente">Kaiser Permanente</option>
+              <option value="Highmark">Highmark</option>
+            </optgroup>
+
+            <optgroup label="── Medicaid Managed Care ──">
+              <option value="Molina Healthcare">Molina Healthcare</option>
+              <option value="WellCare">WellCare</option>
+              <option value="Ambetter">Ambetter (Centene)</option>
+              <option value="Amerigroup">Amerigroup</option>
+              <option value="CareSource">CareSource</option>
+              <option value="Fidelis Care">Fidelis Care</option>
+              <option value="Health Net">Health Net</option>
+            </optgroup>
+
+            <optgroup label="── Regional Plans ──">
+              <option value="EmblemHealth">EmblemHealth</option>
+              <option value="HealthFirst">HealthFirst</option>
+              <option value="MetroPlus">MetroPlus</option>
+              <option value="Independence Blue Cross">Independence Blue Cross</option>
+              <option value="Premera Blue Cross">Premera Blue Cross</option>
+            </optgroup>
+
+            <optgroup label="── Military / Veterans ──">
+              <option value="Tricare">Tricare</option>
+              <option value="CHAMPVA">CHAMPVA</option>
+            </optgroup>
+
+            <optgroup label="── Other ──">
+              <option value="Marketplace / ACA Plan">Marketplace / ACA Plan</option>
+              <option value="other">My plan isn't listed...</option>
+            </optgroup>
+          </select>
+          <input id="insurance-custom" type="text" class="address-input hidden" placeholder="Enter your plan name">
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Submit</button>
+            <button type="button" id="btn-cancel-insurance" class="btn-secondary">Cancel</button>
+          </div>
+          <p id="insurance-form-msg" class="form-msg hidden"></p>
+        </form>
+
+        <button id="btn-report-wait" class="btn-primary">Report Wait Time</button>
+
+        <!-- Rating -->
+        <div class="rating-card">
+          <div class="rating-card-label">Community Rating</div>
+          <div class="rating-card-value">
+            <span class="star-display" id="detail-stars"></span>
+            <small id="detail-review-count" class="wait-time-label"></small>
+          </div>
+        </div>
+
+        <button id="btn-rate-clinic" class="btn-secondary">Rate this clinic</button>
+
+        <form id="review-form" class="sub-form hidden">
+          <label class="form-label">How was your experience?</label>
+          <div class="star-input" id="star-input">
+            <button type="button" class="star-btn" data-value="1">&#9733;</button>
+            <button type="button" class="star-btn" data-value="2">&#9733;</button>
+            <button type="button" class="star-btn" data-value="3">&#9733;</button>
+            <button type="button" class="star-btn" data-value="4">&#9733;</button>
+            <button type="button" class="star-btn" data-value="5">&#9733;</button>
+          </div>
+          <textarea id="review-comment" class="review-textarea" maxlength="500"
+                    placeholder="Optional: share your experience..." rows="2"></textarea>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Submit Review</button>
+            <button type="button" id="btn-cancel-review" class="btn-secondary">Cancel</button>
+          </div>
+          <p id="review-form-msg" class="form-msg hidden"></p>
+        </form>
+
+        <form id="wait-form" class="wait-form hidden">
+          <label class="form-label">How long is the wait right now?</label>
+          <select id="wait-select" class="form-select">
+            <option value="">-- Select wait time --</option>
+            <!-- these values must match VALID_BUCKETS in app.py and the CHECK in database.py -->
+            <option value="<15">Under 15 minutes</option>
+            <option value="15-30">15 – 30 minutes</option>
+            <option value="30-60">30 – 60 minutes</option>
+            <option value="60-120">1 – 2 hours</option>
+            <option value="120+">Over 2 hours</option>
+          </select>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Submit Report</button>
+            <button type="button" id="btn-cancel-report" class="btn-secondary">Cancel</button>
+          </div>
+          <p id="wait-form-msg" class="form-msg hidden"></p>
+        </form>
+        </div><!-- /#clinic-sections -->
+      </div>
+    </section>
+
+  </div>
+
+  <script src="/static/js/map.js"></script>
+  <!-- Maps JS API key has to be here — Google requires it client-side, no way around it.
+       The Street View key is hidden via the /api/streetview proxy in app.py though.
+       Protect this key by setting HTTP referrer restrictions in Google Cloud Console. -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&libraries=marker&callback=initMap&loading=async">
+  </script>
+</body>
+</html>
