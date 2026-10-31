@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "clinicfinder-plugins",
+  "owner": { "name": "ClinicFinder" },
+  "description": "Vendored design plugins for this repo",
+  "plugins": [
+    { "name": "taste-skill", "source": "./taste-skill", "description": "Art direction for websites, dashboards and app screens", "version": "2.1.5", "category": "design" },
+    { "name": "ui-ux-pro-max", "source": "./ui-ux-pro-max", "description": "UI/UX design intelligence: styles, palettes, fonts, charts, stack guidelines", "version": "2.15.0", "category": "design" }
+  ]
+}

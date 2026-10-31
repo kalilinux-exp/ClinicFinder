@@ -1,0 +1,9 @@
+{
+  "name": "taste-skill",
+  "description": "tasteskill v2: art direction for websites, product pages, dashboards and app screens.",
+  "version": "2.1.5",
+  "author": { "name": "leonxlnx", "email": "hello@tasteskill.dev" },
+  "homepage": "https://github.com/Leonxlnx/taste-skill",
+  "license": "MIT",
+  "skills": ["./skills/taste-skill"]
+}
