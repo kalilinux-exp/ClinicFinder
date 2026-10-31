@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_MEM_TELEMETRY": "0"
+  },
   "enabledPlugins": {
     "taste-skill@clinicfinder-plugins": true,
     "ui-ux-pro-max@clinicfinder-plugins": true,
@@ -16,7 +19,8 @@
     "plugin-dev@claude-code-plugins": true,
     "pr-review-toolkit@claude-code-plugins": true,
     "ralph-loop@claude-code-plugins": true,
-    "security-guidance@claude-code-plugins": true
+    "security-guidance@claude-code-plugins": true,
+    "ecc@ecc": true
   },
   "extraKnownMarketplaces": {
     "clinicfinder-plugins": {
@@ -48,9 +52,12 @@
         "source": "github",
         "repo": "thedotmack/claude-mem"
       }
+    },
+    "ecc": {
+      "source": {
+        "source": "github",
+        "repo": "affaan-m/ecc"
+      }
     }
-  },
-  "env": {
-    "CLAUDE_MEM_TELEMETRY": "0"
   }
 }
